@@ -548,10 +548,8 @@ class PGPKeyManagerApp:
             key_expires = datetime.timedelta(days=days) if days > 0 else None
             usage = self._collect_usage_flags()
 
-            # UID – Positionsargumente
             uid = PGPUID.new(name, email, comment if comment else None)
 
-            # Algorithmus wählen
             selected_bits = None
             if algo_label.startswith("RSA"):
                 selected_bits = int(algo_label.split()[1])
