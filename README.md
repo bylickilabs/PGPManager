@@ -1,4 +1,4 @@
-# PGP Key Manager (Tkinter) (DE/EN) 
+# PGP Key Manager (Tkinter)
 
 
 
@@ -59,7 +59,7 @@ The **PGP Key Manager** is a production-ready desktop application built with **P
 
 <br>
 
-# PGP Schlüssel-Manager (Tkinter) — README (Deutsch)
+# PGP Schlüssel-Manager (Tkinter)
 
 ## Übersicht
 
