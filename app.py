@@ -7,7 +7,8 @@ import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 
 
-APP_TITEL = "PGP Schlüssel-Manager"
+APP_TITEL_DE = "PGP Schlüssel-Manager"
+APP_TITEL_EN = "PGP Key-Manager"
 APP_VERSION = "1.0.0"
 APP_AUTHOR = "©BYLICKILABS | ©Thorsten Bylicki"
 APP_DESCRIPTION_DE = (
@@ -55,7 +56,7 @@ def _try_set_icon(root: tk.Tk):
 
 TEXTS = {
     "en": {
-        "window_title": f"{APP_TITEL} v{APP_VERSION} — {APP_AUTHOR}",
+        "window_title": f"{APP_TITEL_EN} v{APP_VERSION} — {APP_AUTHOR}",
         "section_input": "Identity & Options",
         "name": "Name",
         "email": "Email",
@@ -112,7 +113,7 @@ TEXTS = {
         "confirm_clear_msg": "Remove generated keys and reset the form?",
         "msg_copied": "Copied to clipboard.",
         "info_body": (
-            f"{APP_TITEL} v{APP_VERSION} — {APP_AUTHOR}\n\n"
+            f"{APP_TITEL_EN} v{APP_VERSION} — {APP_AUTHOR}\n\n"
             f"{APP_DESCRIPTION_EN}\n\n"
             "Workflow:\n"
             "1) Enter name, email and optional comment.\n"
@@ -130,7 +131,7 @@ TEXTS = {
         ),
     },
     "de": {
-        "window_title": f"{APP_TITEL} v{APP_VERSION} — {APP_AUTHOR}",
+        "window_title": f"{APP_TITEL_DE} v{APP_VERSION} — {APP_AUTHOR}",
         "section_input": "Identität & Optionen",
         "name": "Name",
         "email": "E-Mail",
@@ -187,7 +188,7 @@ TEXTS = {
         "confirm_clear_msg": "Erzeugte Schlüssel entfernen und Formular zurücksetzen?",
         "msg_copied": "In die Zwischenablage kopiert.",
         "info_body": (
-            f"{APP_TITEL} v{APP_VERSION} — {APP_AUTHOR}\n\n"
+            f"{APP_TITEL_DE} v{APP_VERSION} — {APP_AUTHOR}\n\n"
             f"{APP_DESCRIPTION_DE}\n\n"
             "Ablauf:\n"
             "1) Name, E-Mail und optionalen Kommentar eingeben.\n"
