@@ -1,21 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-PGP Schlüssel-Manager (Tkinter, DE/EN, GitHub, Info)
-- Breites Hauptfenster (alle Buttons vollständig sichtbar)
-- Vollständige DE/EN-Sprachumschaltung (ALLE Labels/Dialoge/Status)
-- GitHub-Button → https://github.com/bylickilabs
-- Info-Dialog mit App-Metadaten (Titel/Version/Autor + DE/EN Beschreibung)
-- OpenPGP-Keypair-Generierung: RSA 2048/3072/4096; Ed25519 (Fallback auf RSA 4096)
-- Nicht-blockierende Generierung (Thread) + Progressbar
-- Copy & Save (ASCII-armored Public/Private Keys)
-- Kompatibilität: PGPUID.new(...) per Positionsargumenten; keyid/key_id-Fallback
-- PyInstaller-ready: optionales Icon-Laden via sys._MEIPASS
-
-Empfohlene Pakete:
-  pip install pgpy cryptography pyasn1
-"""
-
 import os
 import sys
 import threading
@@ -24,7 +6,7 @@ import webbrowser
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 
-# ---------------- App-Metadaten ----------------
+
 APP_TITEL = "PGP Schlüssel-Manager"
 APP_VERSION = "1.0.0"
 APP_AUTHOR = "©BYLICKILABS | ©Thorsten Bylicki"
@@ -38,7 +20,6 @@ APP_DESCRIPTION_EN = (
     "manages usage flags, shows fingerprint & metadata, and allows saving/copying the ASCII-armored keys."
 )
 
-# ---------------- PGPy-Imports & Kompat ----------------
 PGPY_AVAILABLE = True
 PGPY_IMPORT_ERROR = None
 try:
@@ -55,7 +36,6 @@ except Exception as e:
     PGPY_AVAILABLE = False
     PGPY_IMPORT_ERROR = e
 
-# ---------------- Sonstiges ----------------
 GITHUB_URL = "https://github.com/bylickilabs"
 
 def _resource_path(*parts: str) -> str:
@@ -65,7 +45,6 @@ def _resource_path(*parts: str) -> str:
     base = getattr(sys, "_MEIPASS", os.path.abspath(os.path.dirname(__file__)))
     return os.path.join(base, *parts)
 
-# Optional: App-Icon setzen, falls vorhanden
 def _try_set_icon(root: tk.Tk):
     ico_path = _resource_path("assets", "icon.ico")
     if os.path.exists(ico_path):
@@ -74,8 +53,6 @@ def _try_set_icon(root: tk.Tk):
         except Exception:
             pass
 
-
-# ---------------- i18n ----------------
 TEXTS = {
     "en": {
         "window_title": f"{APP_TITEL} v{APP_VERSION} — {APP_AUTHOR}",
@@ -233,7 +210,7 @@ TEXTS = {
 class PGPKeyManagerApp:
     def __init__(self, root: tk.Tk):
         self.root = root
-        self.lang = "de"  # Default: Deutsch
+        self.lang = "de"
         self.t = TEXTS[self.lang]
 
         self._privkey: str | None = None
@@ -244,9 +221,7 @@ class PGPKeyManagerApp:
         self._apply_i18n()
         self._set_status(self.t["status_ready"])
 
-    # ---------------- UI ----------------
     def _build_ui(self):
-        # Breites Fenster: Buttons komplett sichtbar
         self.root.title(self.t["window_title"])
         self.root.geometry("1366x860")
         self.root.minsize(1240, 780)
@@ -254,12 +229,11 @@ class PGPKeyManagerApp:
         self.main = ttk.Frame(self.root, padding=12)
         self.main.pack(fill=tk.BOTH, expand=True)
 
-        self.main.columnconfigure(0, weight=0)  # left
-        self.main.columnconfigure(1, weight=1)  # right
+        self.main.columnconfigure(0, weight=0)
+        self.main.columnconfigure(1, weight=1)
         self.main.rowconfigure(0, weight=1)
         self.main.rowconfigure(1, weight=0)
 
-        # Left panel – inputs
         self.left = ttk.LabelFrame(self.main, text="")
         self.left.grid(row=0, column=0, sticky="nsew", padx=(0, 10))
         for i in range(0, 20):
@@ -267,7 +241,6 @@ class PGPKeyManagerApp:
         self.left.columnconfigure(0, weight=0, minsize=200)
         self.left.columnconfigure(1, weight=1)
 
-        # Inputs
         self.lbl_name = ttk.Label(self.left, text="Name")
         self.ent_name = ttk.Entry(self.left)
 
@@ -292,7 +265,6 @@ class PGPKeyManagerApp:
         self.spn_exp = ttk.Spinbox(self.left, from_=0, to=3650, increment=1, width=12)
         self.spn_exp.set("0")
 
-        # Key usage flags
         self.frm_usage = ttk.Labelframe(self.left, text="Usage")
         self.var_sign = tk.BooleanVar(value=True)
         self.var_encrypt = tk.BooleanVar(value=True)
@@ -305,7 +277,6 @@ class PGPKeyManagerApp:
         self.chk_certify = ttk.Checkbutton(self.frm_usage, variable=self.var_certify, text="Certify")
         self.chk_auth = ttk.Checkbutton(self.frm_usage, variable=self.var_auth, text="Authenticate")
 
-        # Actions
         self.frm_actions = ttk.Labelframe(self.left, text="Actions")
         self.btn_generate = ttk.Button(self.frm_actions, text="Generate", command=self.on_generate)
         self.btn_clear = ttk.Button(self.frm_actions, text="Clear", command=self.on_clear)
@@ -314,7 +285,6 @@ class PGPKeyManagerApp:
         self.btn_info = ttk.Button(self.frm_actions, text="Info", command=self.on_info)
         self.btn_lang = ttk.Button(self.frm_actions, text="DE/EN", command=self.on_toggle_lang)
 
-        # Layout left
         r = 0
         ttk.Label(self.left, text=self.t["section_input"], style="Header.TLabel")\
             .grid(row=r, column=0, columnspan=2, sticky="w", pady=(8, 8))
@@ -353,12 +323,10 @@ class PGPKeyManagerApp:
         self.btn_info.grid(row=0, column=3, padx=10, pady=10, sticky="w")
         self.btn_lang.grid(row=0, column=4, padx=10, pady=10, sticky="e")
 
-        # Progress
         r += 1
         self.progress = ttk.Progressbar(self.left, mode="indeterminate")
         self.progress.grid(row=r, column=0, columnspan=2, sticky="ew", padx=8, pady=(4, 8))
 
-        # Right panel – outputs
         self.right = ttk.LabelFrame(self.main, text="")
         self.right.grid(row=0, column=1, sticky="nsew")
         self.main.rowconfigure(0, weight=1)
@@ -373,7 +341,6 @@ class PGPKeyManagerApp:
         ttk.Label(self.right, text=self.t["section_output"], style="Header.TLabel")\
             .grid(row=0, column=0, columnspan=3, sticky="w", padx=8, pady=8)
 
-        # Meta fields
         self.lbl_fp = ttk.Label(self.right, text="Fingerprint:")
         self.val_fp = ttk.Entry(self.right, state="readonly")
         self.lbl_kid = ttk.Label(self.right, text="Key ID:")
@@ -402,7 +369,6 @@ class PGPKeyManagerApp:
         self.val_created.grid(row=r2, column=1, sticky="ew", padx=8, pady=4)
         self.lbl_expires.grid(row=r2, column=2, sticky="w", padx=8, pady=4)
 
-        # Public key block
         r2 += 1
         self.lbl_pub = ttk.Label(self.right, text="Public Key")
         self.btn_copy_pub = ttk.Button(self.right, text="Copy Public", command=self.copy_public)
@@ -418,7 +384,6 @@ class PGPKeyManagerApp:
         self.txt_pub.grid(row=r2, column=0, columnspan=3, sticky="nsew", padx=(8, 0), pady=(0, 8))
         self.scr_pub_y.grid(row=r2, column=3, sticky="ns", pady=(0, 8))
 
-        # Private key block
         r2 += 1
         self.lbl_priv = ttk.Label(self.right, text="Private Key")
         self.btn_copy_priv = ttk.Button(self.right, text="Copy Private", command=self.copy_private)
@@ -434,11 +399,9 @@ class PGPKeyManagerApp:
         self.txt_priv.grid(row=r2, column=0, columnspan=3, sticky="nsew", padx=(8, 0), pady=(0, 8))
         self.scr_priv_y.grid(row=r2, column=3, sticky="ns", pady=(0, 8))
 
-        # Status bar
         self.status = ttk.Label(self.main, text="", anchor="w")
         self.status.grid(row=1, column=0, columnspan=2, sticky="ew", pady=(8, 0))
 
-        # Styles
         style = ttk.Style(self.root)
         style.configure("Header.TLabel", font=("Segoe UI", 12, "bold"))
 
@@ -482,7 +445,6 @@ class PGPKeyManagerApp:
     def _set_status(self, text: str):
         self.status.configure(text=text)
 
-    # ---------------- Actions ----------------
     def on_toggle_lang(self):
         self.lang = "en" if self.lang == "de" else "de"
         self._apply_i18n()
@@ -595,7 +557,6 @@ class PGPKeyManagerApp:
                 selected_bits = int(algo_label.split()[1])
                 key = PGPKey.new(PubKeyAlgorithm.RSAEncryptOrSign, selected_bits)
             else:
-                # Ed25519 – bei Fehler Fallback auf RSA 4096
                 try:
                     key = PGPKey.new(PubKeyAlgorithm.EdDSA, EllipticCurveOID.Ed25519)
                 except Exception:
@@ -616,14 +577,12 @@ class PGPKeyManagerApp:
                 key_expires=key_expires,
             )
 
-            # Privaten Key schützen
             key.protect(passphrase, SymmetricKeyAlgorithm.AES256, HashAlgorithm.SHA256)
 
             pubkey = key.pubkey
             priv_armored = str(key)
             pub_armored = str(pubkey)
 
-            # Metadaten
             bits_val = getattr(key, "key_size", None)
             if getattr(key, "key_algorithm", None) == PubKeyAlgorithm.EdDSA:
                 bits_val = 25519
